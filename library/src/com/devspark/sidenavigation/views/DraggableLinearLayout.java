@@ -182,7 +182,6 @@ public class DraggableLinearLayout extends LinearLayout {
                 translateAnimation = null;
             }
         });
-        translateAnimation.initialize(getWidth(), getHeight(), 0, 0);
         translateAnimation.start();
     }
 
