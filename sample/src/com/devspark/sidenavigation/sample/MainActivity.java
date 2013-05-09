@@ -28,9 +28,9 @@ import com.devspark.sidenavigation.SideNavigationView;
 import com.devspark.sidenavigation.SideNavigationView.Mode;
 
 /**
- * 
+ *
  * @author e.shishkin
- * 
+ *
  */
 public class MainActivity extends SherlockActivity implements ISideNavigationCallback {
 
@@ -48,7 +48,8 @@ public class MainActivity extends SherlockActivity implements ISideNavigationCal
         setContentView(R.layout.activity_main);
         icon = (ImageView) findViewById(android.R.id.icon);
         sideNavigationView = (SideNavigationView) findViewById(R.id.side_navigation_view);
-        sideNavigationView.setMenuItems(R.menu.side_navigation_menu);
+        sideNavigationView.setContentView(R.layout.drawer_menu);
+        // sideNavigationView.setMenuItems(R.menu.side_navigation_menu);
         sideNavigationView.setMenuClickCallback(this);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
@@ -135,7 +136,7 @@ public class MainActivity extends SherlockActivity implements ISideNavigationCal
 
     /**
      * Start activity from SideNavigation.
-     * 
+     *
      * @param title title of Activity
      * @param resId resource if of background image
      */
