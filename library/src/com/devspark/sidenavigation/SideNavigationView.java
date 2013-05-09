@@ -14,6 +14,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 
 import com.devspark.sidenavigation.views.DraggableLinearLayout;
+import com.devspark.sidenavigation.views.DraggableLinearLayout.AnimationListener;
 
 /**
  * View of displaying side navigation.
@@ -361,20 +362,29 @@ public class SideNavigationView extends LinearLayout {
         long durationMillis = getAnimDurationFromVelocity(fromXDelta);
         if (durationMillis > 1000 || durationMillis < 0) {
             durationMillis = 800;
+            Log.e("duration", durationMillis + "ms");
         }
-        Log.e("duration", durationMillis + "ms");
-        navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis, null);
-        //
-        // TranslateAnimation anim = new TranslateAnimation(fromXDelta, toXDelta, 0, 0);
-        // anim.setDuration(durationMillis);
-        // anim.setInterpolator(new DecelerateInterpolator());
-        // anim.setFillAfter(true);
-        //
-        // navigationMenu.startAnimation(anim);
+        navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis);
     }
 
     protected void hideMenuWithVelocity() {
+        float fromXDelta = navigationMenu.getTransX();
+        float toXDelta = -navigationMenu.getWidth();
+        long durationMillis = getAnimDurationFromVelocity(toXDelta - fromXDelta);
+        if (durationMillis > 1000 || durationMillis < 0) {
+            durationMillis = 1000;
+            Log.e("duration", durationMillis + "ms");
+        }
+        navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis, new AnimationListener() {
 
+            @Override
+            public void onAnimationStop() {
+                setDrawerInvisible();
+            }
+
+            @Override
+            public void onAnimationStart() {}
+        });
     }
 
     protected void setDrawerVisible() {

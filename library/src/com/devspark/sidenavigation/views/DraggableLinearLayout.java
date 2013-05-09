@@ -9,8 +9,11 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.view.animation.Transformation;
+import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 
 /**
@@ -18,6 +21,15 @@ import android.widget.LinearLayout;
  *
  */
 public class DraggableLinearLayout extends LinearLayout {
+
+    public interface AnimationListener {
+        public void onAnimationStart();
+
+        public void onAnimationStop();
+    }
+
+    TranslateAnimation translateAnimation;
+    Transformation transformation = new Transformation();
 
     class CustomTranslateAnimation {
 
@@ -35,6 +47,7 @@ public class DraggableLinearLayout extends LinearLayout {
         float distanceLeft = 0;
 
         Interpolator interpolator;
+        AnimationListener animationListener = null;
 
         boolean isAnimating() {
             long current = System.currentTimeMillis();
@@ -43,22 +56,26 @@ public class DraggableLinearLayout extends LinearLayout {
 
         void calculateAnimation() {
             long current = System.currentTimeMillis();
-            if (lastFrameTime == 0) {
-                lastFrameTime = startTime;
-            }
             long timeDiff = current - lastFrameTime;
             animationTime += timeDiff;
-            float interpolatedTime = interpolator.getInterpolation(animationTime / (float) duration);
+            float timeNormalized = animationTime / (float) duration;
+            float interpolatedMultiplier = interpolator.getInterpolation(timeNormalized);
 
-            if (animationTime < duration) {
-                frameTranslationX = (distanceLeft) * interpolatedTime;
+            if (timeNormalized < 1.0f) {
+                frameTranslationX = (distanceLeft) * interpolatedMultiplier;
                 distanceLeft -= frameTranslationX;
             } else {
                 frameTranslationX = distanceLeft;
                 distanceLeft = 0;
+                Log.e("Animation", "STOP");
+                if (animationListener != null) {
+                    animationListener.onAnimationStop();
+                }
             }
 
-            Log.d("Animation", String.format("Time d: %d interpolated: %f trans x: %f", timeDiff, interpolatedTime, frameTranslationX));
+            Log.d("Animation",
+ String.format("Time d: %d interpolated: %f trans x: %f norm: %f", timeDiff, interpolatedMultiplier,
+                            frameTranslationX, timeNormalized));
             lastFrameTime = current;
         }
 
@@ -69,6 +86,10 @@ public class DraggableLinearLayout extends LinearLayout {
         void startAnimation() {
             distanceLeft = toX - fromX;
             animationTime = 0;
+            lastFrameTime = startTime;
+            if(animationListener != null) {
+                animationListener.onAnimationStart();
+            }
         }
     }
 
@@ -122,15 +143,47 @@ public class DraggableLinearLayout extends LinearLayout {
         return matrixValues[Matrix.MTRANS_Y];
     }
 
-    public void animTranslation(float fromX, float toX, long durationMs, Interpolator interpolator) {
-        animation = new CustomTranslateAnimation();
-        animation.fromX = fromX;
-        animation.toX = toX;
-        animation.startTime = System.currentTimeMillis();
-        animation.duration = durationMs;
-        animation.interpolator = interpolator == null ? new DecelerateInterpolator() : interpolator;
-        animation.startAnimation();
-        invalidate();
+    public void animTranslation(float fromX, float toX, long durationMs) {
+        animTranslation(fromX, toX, durationMs, null, null);
+    }
+
+    public void animTranslation(float fromX, float toX, long durationMs, AnimationListener listener) {
+        animTranslation(fromX, toX, durationMs, listener, null);
+    }
+
+    public void animTranslation(float fromX, float toX, long durationMs, AnimationListener listener, Interpolator interpolator) {
+        // animation = new CustomTranslateAnimation();
+        // animation.fromX = fromX;
+        // animation.toX = toX;
+        // animation.startTime = System.currentTimeMillis();
+        // animation.duration = durationMs;
+        // animation.interpolator = interpolator == null ? new DecelerateInterpolator() :
+        // interpolator;
+        // animation.animationListener = listener;
+        // animation.startAnimation();
+        // invalidate();
+        Log.e("animTranslation", fromX + " " + toX);
+        translateAnimation = new TranslateAnimation(fromX, toX, 0, 0);
+        translateAnimation.setDuration(durationMs);
+        translateAnimation.setInterpolator(interpolator == null ? new DecelerateInterpolator() : interpolator);
+        translateAnimation.setFillAfter(true);
+        translateAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                translateAnimation = null;
+            }
+        });
+        translateAnimation.initialize(getWidth(), getHeight(), 0, 0);
+        translateAnimation.start();
     }
 
     @Override
@@ -144,10 +197,18 @@ public class DraggableLinearLayout extends LinearLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         Matrix matrix = canvas.getMatrix();
-        if (animation != null && animation.isAnimating()) {
-            animation.calculateAnimation();
-            moveBy(animation.getFrameTranslationX(), 0);
+        long currentTime = System.currentTimeMillis();
+        if (translateAnimation != null) {
+            translateAnimation.getTransformation(currentTime, transformation);
+            Log.d("onDraw", transformation.toString());
+            translationMatrix.preConcat(transformation.getMatrix());
+            invalidate();
         }
+
+        // if (animation != null && animation.isAnimating()) {
+        // animation.calculateAnimation();
+        // moveBy(animation.getFrameTranslationX(), 0);
+        // }
         matrix.preConcat(translationMatrix);
         canvas.setMatrix(translationMatrix);
         canvas.drawPaint(paint);
