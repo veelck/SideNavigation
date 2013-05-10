@@ -1,7 +1,5 @@
 package com.devspark.sidenavigation;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -11,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 
 import com.devspark.sidenavigation.views.DraggableLinearLayout;
@@ -23,9 +22,15 @@ import com.devspark.sidenavigation.views.DraggableLinearLayout.AnimationListener
  *
  */
 public class SideNavigationView extends LinearLayout {
-    private static final String LOG_TAG = SideNavigationView.class.getSimpleName();
+    private static final int MAX_HIDE_ANIMATION_TIME = 200;
+
+    private static final int MAX_SHOW_ANIMATION_TIME = 500;
+
+    // private static final String LOG_TAG = SideNavigationView.class.getSimpleName();
 
     private static final int INVALID_POINTER_ID = -1;
+
+    private static final float MIN_VELOCITY = 0.8f;
 
     private int activeXDiff = 20;
 
@@ -34,8 +39,6 @@ public class SideNavigationView extends LinearLayout {
     private View menuContentView;
     private View outsideView;
 
-    private ISideNavigationCallback callback;
-    private ArrayList<SideNavigationItem> menuItems;
     private Mode mMode = Mode.LEFT;
 
     VelocityTracker velocityTracker;
@@ -115,27 +118,7 @@ public class SideNavigationView extends LinearLayout {
                 hideMenu();
             }
         });
-        // menuContent.setOnItemClickListener(new OnItemClickListener() {
-        // @Override
-        // public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // if (callback != null) {
-        // callback.onSideNavigationItemClick(menuItems.get(position).getId());
-        // }
-        // hideMenu();
-        // }
-        // });
     }
-
-    /**
-     * Setup of {@link ISideNavigationCallback} for callback of item click.
-     *
-     * @param callback
-     */
-    public void setMenuClickCallback(ISideNavigationCallback callback) {
-        this.callback = callback;
-    }
-
-
 
     /**
      * Setup sliding mode of side menu ({@code Mode.LEFT} or {@code Mode.RIGHT}). {@code Mode.LEFT} by default.
@@ -252,6 +235,39 @@ public class SideNavigationView extends LinearLayout {
     }
 
     @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        boolean retVal = false;
+        final int action = MotionEventCompat.getActionMasked(ev);
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                final int pointerIndex = MotionEventCompat.getActionIndex(ev);
+                final float x = MotionEventCompat.getX(ev, pointerIndex);
+                final float y = MotionEventCompat.getY(ev, pointerIndex);
+
+                float navMenuRight = navigationMenu.getWidth() + navigationMenu.getTransX();
+//                Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x);
+
+                if (x > navMenuRight - activeXDiff) {
+                    isDragging = true;
+                    // Remember where we started (for dragging)
+                    mLastTouchX = x;
+                    mLastTouchY = y;
+                    // Save the ID of this pointer (for dragging)
+                    mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
+
+                    velocityTracker = VelocityTracker.obtain();
+                    velocityTracker.addMovement(ev);
+                    retVal = true;
+//                    Log.d("onInterceptTouchEvent", "HIT!");
+                }
+                break;
+            }
+        }
+        return retVal;
+    }
+
+
+    @Override
     public boolean onTouchEvent(MotionEvent ev) {
         final int action = MotionEventCompat.getActionMasked(ev);
         switch (action) {
@@ -295,7 +311,6 @@ public class SideNavigationView extends LinearLayout {
 
                     if (isShown()) {
                         updateLayout();
-                        // invalidate();
                     } else if (mPosX > activeXDiff) {
 
                         setDrawerVisible();
@@ -313,18 +328,26 @@ public class SideNavigationView extends LinearLayout {
                 if (isDragging) {
                     velocityTracker.addMovement(ev);
                     mActivePointerId = INVALID_POINTER_ID;
-                    if (ev.getPointerCount() == 1) {
-                        velocityTracker.computeCurrentVelocity(1);
-                        velocityX = velocityTracker.getXVelocity();
-                        velocityTracker.recycle();
-                        velocityTracker = null;
-                        if (velocityX < 0) {
-                            hideMenuWithVelocity();
-                            Log.e("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%.2f", velocityX, mPosX));
+                    velocityTracker.computeCurrentVelocity(1);
+                    velocityX = velocityTracker.getXVelocity();
+                    if (Math.abs(velocityX) < MIN_VELOCITY) {
+                        if (velocityX > 0) {
+                            velocityX = MIN_VELOCITY;
                         } else {
-                            showMenuWithVelocity();
-                            Log.e("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%.2f", velocityX, mPosX));
+                            velocityX = -MIN_VELOCITY;
                         }
+                    }
+                    velocityTracker.recycle();
+                    velocityTracker = null;
+                    if (velocityX < 0) {
+                        hideMenuWithVelocity();
+                        Log.e("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%f", velocityX, mPosX));
+                    } else if (velocityX > 0) {
+                        showMenuWithVelocity();
+                        Log.e("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%f", velocityX, mPosX));
+                    } else {
+                        Log.e("UNDEFINED", "velocity is zero");
+                        hideMenuWithVelocity();
                     }
                     isDragging = false;
                 }
@@ -359,11 +382,11 @@ public class SideNavigationView extends LinearLayout {
     protected void showMenuWithVelocity() {
         float fromXDelta = navigationMenu.getTransX();
         float toXDelta = 0;
-        long durationMillis = getAnimDurationFromVelocity(fromXDelta);
-        if (durationMillis > 1000 || durationMillis < 0) {
-            durationMillis = 800;
-            Log.e("duration", durationMillis + "ms");
+        long durationMillis = getAnimDurationFromVelocity(toXDelta - fromXDelta);
+        if (durationMillis > MAX_SHOW_ANIMATION_TIME || durationMillis < 0) {
+            durationMillis = MAX_SHOW_ANIMATION_TIME;
         }
+        Log.e("showMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis);
     }
 
@@ -371,10 +394,10 @@ public class SideNavigationView extends LinearLayout {
         float fromXDelta = navigationMenu.getTransX();
         float toXDelta = -navigationMenu.getWidth();
         long durationMillis = getAnimDurationFromVelocity(toXDelta - fromXDelta);
-        if (durationMillis > 1000 || durationMillis < 0) {
-            durationMillis = 1000;
-            Log.e("duration", durationMillis + "ms");
+        if (durationMillis > MAX_HIDE_ANIMATION_TIME || durationMillis < 0) {
+            durationMillis = MAX_HIDE_ANIMATION_TIME;
         }
+        Log.e("hideMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis, new AnimationListener() {
 
             @Override
@@ -384,20 +407,10 @@ public class SideNavigationView extends LinearLayout {
 
             @Override
             public void onAnimationStart() {}
-        });
+        }, new LinearInterpolator());
     }
 
     protected void setDrawerVisible() {
-        if (!isShown()) {
-            // navigationMenu.setTransX(-navigationMenu.getWidth());
-            // RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
-            // navigationMenu.getLayoutParams();
-            // params.leftMargin = -params.width;
-            // navigationMenu.setLayoutParams(params);
-            // navigationMenu.moveBy(-params.width, 0);
-//            params.leftMargin = -params.width;
-//            menuContent.setLayoutParams(params);
-        }
         navigationMenu.setVisibility(View.VISIBLE);
         outsideView.setVisibility(View.VISIBLE);
     }
@@ -419,34 +432,20 @@ public class SideNavigationView extends LinearLayout {
     private void updateLayout() {
         switch (mMode) {
             case LEFT:
-
-                if (navigationMenu.getTransX() >= 0) {
-                    navigationMenu.setTransX(0f);
+                if (navigationMenu.getTransX() + mPosX >= 0) {
+                    if (mPosX > 0f) {
+                        navigationMenu.setTransX(0f);
+                    } else {
+                        navigationMenu.moveBy(mPosX, 0);
+                    }
                 } else if (navigationMenu.getTransX() < -navigationMenu.getWidth() - activeXDiff) {
-                    Log.e("translation", navigationMenu.getWidth() + " " + navigationMenu.getTransX());
+                    // Log.d("translation", navigationMenu.getWidth() + " " +
+                    // navigationMenu.getTransX());
                     navigationMenu.setTransX(-navigationMenu.getWidth());
-                    // setDrawerInvisible();
                 } else {
                     navigationMenu.moveBy(mPosX, 0);
                 }
                 mPosX = 0;
-
-
-//                TranslateAnimation anim = new TranslateAnimation(0, mPosX, 0, 0);
-//                anim.setDuration(0);
-//                anim.setFillAfter(true);
-//                navigationMenu.startAnimation(anim);
-//                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) menuContent.getLayoutParams();
-//                params.leftMargin = (int) (params.leftMargin + mPosX);
-//                if (params.leftMargin > 0) {
-//                    params.leftMargin = 0;
-//                } else if (params.leftMargin < -params.width + activeXDiff) {
-//                    params.leftMargin = -params.width;
-//                    setDrawerInvisible();
-//                }
-//                mPosX = 0f;
-//                menuContent.setLayoutParams(params);
-
 
                 break;
             case RIGHT:
