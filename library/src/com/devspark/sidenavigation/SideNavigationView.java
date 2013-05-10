@@ -3,7 +3,6 @@ package com.devspark.sidenavigation;
 import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -341,12 +340,14 @@ public class SideNavigationView extends LinearLayout {
                     velocityTracker = null;
                     if (velocityX < 0) {
                         hideMenuWithVelocity();
-                        Log.e("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%f", velocityX, mPosX));
+                        // Log.d("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%f", velocityX,
+                        // mPosX));
                     } else if (velocityX > 0) {
                         showMenuWithVelocity();
-                        Log.e("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%f", velocityX, mPosX));
+                        // Log.d("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%f", velocityX,
+                        // mPosX));
                     } else {
-                        Log.e("UNDEFINED", "velocity is zero");
+                        // Log.d("UNDEFINED", "velocity is zero");
                         hideMenuWithVelocity();
                     }
                     isDragging = false;
@@ -386,7 +387,8 @@ public class SideNavigationView extends LinearLayout {
         if (durationMillis > MAX_SHOW_ANIMATION_TIME || durationMillis < 0) {
             durationMillis = MAX_SHOW_ANIMATION_TIME;
         }
-        Log.e("showMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
+        // Log.d("showMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f",
+        // durationMillis, fromXDelta, toXDelta));
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis);
     }
 
@@ -397,7 +399,8 @@ public class SideNavigationView extends LinearLayout {
         if (durationMillis > MAX_HIDE_ANIMATION_TIME || durationMillis < 0) {
             durationMillis = MAX_HIDE_ANIMATION_TIME;
         }
-        Log.e("hideMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
+        // Log.d("hideMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f",
+        // durationMillis, fromXDelta, toXDelta));
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis, new AnimationListener() {
 
             @Override

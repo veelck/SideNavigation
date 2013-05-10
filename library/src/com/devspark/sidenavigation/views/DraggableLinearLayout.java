@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
@@ -88,7 +87,7 @@ public class DraggableLinearLayout extends LinearLayout {
     }
 
     public void animTranslation(float fromX, float toX, long durationMs, final AnimationListener listener, Interpolator interpolator) {
-        Log.e("animTranslation", fromX + " " + toX);
+        // Log.d("animTranslation", fromX + " " + toX);
         translateAnimation = new TranslateAnimation(fromX, toX, 0, 0);
         translateAnimation.setDuration(durationMs);
         translateAnimation.setInterpolator(interpolator == null ? new DecelerateInterpolator() : interpolator);
@@ -129,25 +128,16 @@ public class DraggableLinearLayout extends LinearLayout {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        /**
-         * since Google changed the logic of managing matrix, from API 16 the getMatrix() of the
-         * canvas was deprecated Managing of the transformation matrix was moved to the view in API
-         * 11, but since we want to support versions since API 7, we have to stick to this
-         * deprecated method.
-         */
-        canvas.getMatrix(tmpMatrix);
         long currentTime = AnimationUtils.currentAnimationTimeMillis();
         if (translateAnimation != null) {
             translateAnimation.getTransformation(currentTime, transformation);
             transformation.getMatrix().getValues(matrixValues);
             translationMatrix.setValues(matrixValues);
-            Log.d("onDraw", translationMatrix.toString());
+            // Log.d("onDraw", translationMatrix.toString());
             invalidate();
         }
-
-        tmpMatrix.postConcat(translationMatrix);
-        canvas.setMatrix(tmpMatrix);
-        canvas.drawPaint(paint);
+        canvas.concat(translationMatrix);
+        // canvas.drawPaint(paint);
         super.onDraw(canvas);
     }
 
