@@ -3,6 +3,7 @@ Android SideNavigation Library
 
 Implementation of "Side Navigation" or "Fly-in app menu" pattern for Android (based on Google+ app).
 
+It is shown as overlay on the actual application layout, in contrast to moving whole view aside when openning the menu.
 
 Description
 -----------
@@ -13,24 +14,11 @@ Google+ also has the up caret icon and the action bar present when the menu is o
 There was a interesting discussion about this pattern in the blog's Google+ page some time ago. 
 You can find the post & discussion here: [Google+](https://plus.google.com/115177579026138386092/posts/AvXiTF7LqDK).
 
-Sample
-------
-
-A sample application is available on Google Play:
-
-<a href="http://play.google.com/store/apps/details?id=com.devspark.sidenavigation.sample">
-  <img alt="Get it on Google Play"
-       src="http://www.android.com/images/brand/get_it_on_play_logo_small.png" />
-</a>
-
-![Example Image][1] ![Example Image][2]
-
-The source code is available in this repository.
 
 Compatibility
 -------------
 
-This library is compatible from API 4 (Android 1.6).
+This library is compatible from API 7 (Android 1.6).
 
 Installation
 ------------
@@ -40,6 +28,18 @@ The sample project requires:
 * The library project
 * [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock)
 
+General information
+-------------------
+
+This version of the SideNavigation library is based on [johnkil's version](http://johnkil.github.com/SideNavigation).
+It is mainly modified to allow injecting custom layout inside the drawer instead of using the menu.xml format to create ListView with items declared there.
+
+Also main point of changes was adding possibility to drag the menu out instead of show/hide it with animation only.
+
+Currently the animation is performed using [TranslateAnimation](http://developer.android.com/reference/android/view/animation/TranslateAnimation.html) applied directly to Canvas of customized LinearLayout instead of the startAnimation() method.
+This was necessary, since we wanted to achieve behaviour, that you can partially drag the menu and the the animation will finish up openning it.
+
+
 Usage
 -----
 
@@ -47,7 +47,7 @@ To display the item you need the following code:
 
 * Add SideNavigationView to the end of the layout. Example:
 
-``` xml
+```
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -68,94 +68,69 @@ To display the item you need the following code:
 </RelativeLayout>
 ```
 
-* Create '.xml' description of the menu for the sideNavigationView. Example:
+* Create '.xml' layout of the content of menu.
 
-``` xml
+```
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/side_navigation_menu_item1"
-        android:icon="@drawable/ic_android1"
-        android:title="@string/title1"/>
-    <item
-        android:id="@+id/side_navigation_menu_item2"
-        android:icon="@drawable/ic_android2"
-        android:title="@string/title2"/>
-    <item
-        android:id="@+id/side_navigation_menu_item3"
-        android:icon="@drawable/ic_android3"
-        android:title="@string/title3"/>
-    <item
-        android:id="@+id/side_navigation_menu_item4"
-        android:icon="@drawable/ic_android4"
-        android:title="@string/title4"/>
-    <item
-        android:id="@+id/side_navigation_menu_item5"
-        android:icon="@drawable/ic_android5"
-        android:title="@string/title5"/>
-
-</menu>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+     >
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Test"/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Test"/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Test"/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Test"/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Test"/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:text="Testaaaaaaaaa"/>
+</LinearLayout>
 ```
 
-* Set home should be displayed as an "up" and initialize the sideNavigationView:
+* Set the custom layout as the view of the menu:
 
-``` java
+```
 @Override
 protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 	setContentView(R.layout.activity_main);
     // other code
     
-    sideNavigationView = (SideNavigationView) findViewById(R.id.side_navigation_view);
+    sideNavigationView = (SideNavigationView)findViewById(R.id.side_navigation_view);
     sideNavigationView.setMenuItems(R.menu.side_navigation_menu);
-	sideNavigationView.setMenuClickCallback(/*ISideNavigationCallback*/);
-	sideNavigationView.setMode(/*SideNavigationView.Mode*/);
-        
-    getActionBar().setDisplayHomeAsUpEnabled(true);
+        sideNavigationView.setContentView(R.layout.drawer_menu);
 }
 ```
 
-* Override onOptionsItemSelected() method for show/hide teh sideNavigationView:
-
-``` java
-@Override
-public boolean onOptionsItemSelected(MenuItem item) {
-	switch (item.getItemId()) {
-	case android.R.id.home:
-		sideNavigationView.toggleMenu();
-		break;
-	default:
-		return super.onOptionsItemSelected(item);
-	}
-	return true;
-}
-```
-
-* Implementation of ISideNavigationCallback:
-
-``` java
-ISideNavigationCallback sideNavigationCallback = new ISideNavigationCallback() {
-    	
-	@Override
-	public void onSideNavigationItemClick(int itemId) {
-		// Validation clicking on side navigation item
-	}
-};
-```
+You have to handle all the events from items stored in the custom layout by yourself.
 
 Contribution
 ------------
 
-Please fork [dev](https://github.com/johnkil/SideNavigation/tree/dev) repository and contribute back using [pull requests](https://github.com/johnkil/SideNavigation/pulls).
-
-Contributors are recommended to follow the Android [Code Style Guidelines](http://source.android.com/source/code-style.html).
-
-Any contributions, large or small, major features, bug fixes, additional language translations, unit/integration tests are welcomed and appreciated but will be thoroughly reviewed and discussed.
+If you want to extend functionality of this library, please fork. In case you find any issues, please file a bug report.
 
 Developed By
 ------------
 * Evgeny Shishkin - <johnkil78@gmail.com>
+* Damian Walczak - <damian.walczak@gmail.com>
 
 License
 -------
@@ -174,5 +149,3 @@ License
     See the License for the specific language governing permissions and
     limitations under the License.
 
-[1]: http://i45.tinypic.com/f8jzn.png
-[2]: http://i48.tinypic.com/2naid6d.png
