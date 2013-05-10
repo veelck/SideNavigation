@@ -1,6 +1,7 @@
 package com.devspark.sidenavigation;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -13,6 +14,8 @@ import android.widget.LinearLayout;
 
 import com.devspark.sidenavigation.views.DraggableLinearLayout;
 import com.devspark.sidenavigation.views.DraggableLinearLayout.AnimationListener;
+import com.devspark.sidenavigation.views.DraggableLinearLayout.OpenningProgressListener;
+import com.nineoldandroids.view.ViewHelper;
 
 /**
  * View of displaying side navigation.
@@ -25,13 +28,15 @@ public class SideNavigationView extends LinearLayout {
 
     private static final int MAX_SHOW_ANIMATION_TIME = 500;
 
-    // private static final String LOG_TAG = SideNavigationView.class.getSimpleName();
+    private static final String LOG_TAG = SideNavigationView.class.getSimpleName();
+
+    private static final boolean DEBUG = true;
 
     private static final int INVALID_POINTER_ID = -1;
 
     private static final float MIN_VELOCITY = 0.8f;
 
-    private int activeXDiff = 20;
+    private int activeXDiff = 30;
 
     private DraggableLinearLayout navigationMenu;
     private LinearLayout menuContent;
@@ -53,6 +58,18 @@ public class SideNavigationView extends LinearLayout {
     float mPosY = 0f;
 
     boolean isDragging = false;
+
+    Paint paint = new Paint();
+
+    private OpenningProgressListener openningListener = new OpenningProgressListener() {
+
+        @Override
+        public void onProgress(float progress) {
+            if (outsideView != null && outsideView.isShown()) {
+                ViewHelper.setAlpha(outsideView, progress);
+            }
+        }
+    };
 
     public static enum Mode {
         LEFT, RIGHT
@@ -87,6 +104,7 @@ public class SideNavigationView extends LinearLayout {
             return;
         }
         initView();
+        paint.setColor(0x0f0f0000);
     }
 
     /**
@@ -171,12 +189,26 @@ public class SideNavigationView extends LinearLayout {
         }
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        navigationMenu.setOpenningProgressListener(openningListener);
+        super.onAttachedToWindow();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        // navigationMenu.removeOpenningProgressListener();
+        super.onDetachedFromWindow();
+    }
+
     /**
      * Show side navigation menu.
      */
     public void showMenu() {
-        outsideView.setVisibility(View.VISIBLE);
-        outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.side_navigation_fade_in));
+        // outsideView.setVisibility(View.VISIBLE);
+        // outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(),
+        // R.anim.side_navigation_fade_in));
+
         // show navigation menu with animation
         int animRes;
         switch (mMode) {
@@ -203,7 +235,9 @@ public class SideNavigationView extends LinearLayout {
             return;
         }
         outsideView.setVisibility(View.GONE);
-        outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.side_navigation_fade_out));
+        // outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(),
+        // R.anim.side_navigation_fade_out));
+
         // hide navigation menu with animation
         int animRes;
         switch (mMode) {
@@ -246,7 +280,7 @@ public class SideNavigationView extends LinearLayout {
                 float navMenuRight = navigationMenu.getWidth() + navigationMenu.getTransX();
 //                Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x);
 
-                if (x > navMenuRight - activeXDiff) {
+                if (isShown() && x > navMenuRight - activeXDiff) {
                     isDragging = true;
                     // Remember where we started (for dragging)
                     mLastTouchX = x;
@@ -415,12 +449,14 @@ public class SideNavigationView extends LinearLayout {
 
     protected void setDrawerVisible() {
         navigationMenu.setVisibility(View.VISIBLE);
+        ViewHelper.setAlpha(outsideView, 0f);
         outsideView.setVisibility(View.VISIBLE);
     }
 
     protected void setDrawerInvisible(){
         navigationMenu.setVisibility(View.GONE);
         outsideView.setVisibility(View.GONE);
+        ViewHelper.setAlpha(outsideView, 0f);
     }
 
     private long getAnimDurationFromVelocity(float distance) {
@@ -449,6 +485,7 @@ public class SideNavigationView extends LinearLayout {
                     navigationMenu.moveBy(mPosX, 0);
                 }
                 mPosX = 0;
+                // ViewHelper.setAlpha(outsideView, navigationMenu.getPercentOpen());
 
                 break;
             case RIGHT:

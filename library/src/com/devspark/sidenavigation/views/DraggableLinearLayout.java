@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -28,6 +29,10 @@ public class DraggableLinearLayout extends LinearLayout {
         public void onAnimationStop();
     }
 
+    public interface OpenningProgressListener {
+        public void onProgress(float progress);
+    }
+
     TranslateAnimation translateAnimation;
     Transformation transformation = new Transformation();
 
@@ -35,6 +40,19 @@ public class DraggableLinearLayout extends LinearLayout {
     Matrix tmpMatrix = new Matrix();
     Paint paint = new Paint();
     float[] matrixValues = new float[9];
+
+    OpenningProgressListener openningProgressListener;
+
+    Handler handler = new Handler();
+
+    Runnable progressReporter = new Runnable() {
+        @Override
+        public void run() {
+            if (openningProgressListener != null) {
+                openningProgressListener.onProgress(getPercentOpen());
+            }
+        }
+    };
 
     public DraggableLinearLayout(Context context) {
         super(context);
@@ -47,6 +65,14 @@ public class DraggableLinearLayout extends LinearLayout {
         setWillNotDraw(false);
         translationMatrix = new Matrix();
         paint.setColor(0x0f00ff00);
+    }
+
+    public void setOpenningProgressListener(OpenningProgressListener openningProgressListener) {
+        this.openningProgressListener = openningProgressListener;
+    }
+
+    public void removeOpenningProgressListener() {
+        this.openningProgressListener = null;
     }
 
     public void moveBy(float dx, float dy) {
@@ -76,6 +102,15 @@ public class DraggableLinearLayout extends LinearLayout {
     public float getTransY() {
         translationMatrix.getValues(matrixValues);
         return matrixValues[Matrix.MTRANS_Y];
+    }
+
+    /**
+     * Returns percent of the currently visible part of the drawer
+     *
+     * @return value in rage [0, 1]
+     */
+    public float getPercentOpen() {
+        return (getWidth() + getTransX()) / getWidth();
     }
 
     public void animTranslation(float fromX, float toX, long durationMs) {
@@ -139,6 +174,9 @@ public class DraggableLinearLayout extends LinearLayout {
         canvas.concat(translationMatrix);
         // canvas.drawPaint(paint);
         super.onDraw(canvas);
+        if (openningProgressListener != null) {
+            handler.post(progressReporter);
+        }
     }
 
 }
