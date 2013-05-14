@@ -5,5 +5,5 @@
     
     <dimen name="side_navigation_handle_margin">5dp</dimen>
 
-    <dimen name="side_navigation_active_margin">10dp</dimen>
+    <dimen name="side_navigation_active_margin">40dp</dimen>
 </resources>

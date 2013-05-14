@@ -141,12 +141,6 @@ public class SideNavigationView extends LinearLayout {
             }
         });
         outsideView = findViewById(R.id.side_navigation_outside_view);
-        outsideView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideMenu();
-            }
-        });
         setDrawerInvisible();
     }
 
@@ -455,7 +449,6 @@ public class SideNavigationView extends LinearLayout {
     }
 
     protected void setDrawerInvisible(){
-        // navigationMenu.setVisibility(View.GONE);
         navigationMenu.setEnabled(false);
         outsideView.setVisibility(View.GONE);
         ViewHelper.setAlpha(outsideView, 0f);
