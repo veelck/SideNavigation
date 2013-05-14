@@ -292,6 +292,7 @@ public class SideNavigationView extends LinearLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        boolean retValue = false;
         final int action = MotionEventCompat.getActionMasked(ev);
         switch (action) {
             case MotionEvent.ACTION_DOWN: {
@@ -312,6 +313,7 @@ public class SideNavigationView extends LinearLayout {
 
                     velocityTracker = VelocityTracker.obtain();
                     velocityTracker.addMovement(ev);
+                    retValue = true;
                 }
                 break;
             }
@@ -342,6 +344,8 @@ public class SideNavigationView extends LinearLayout {
                     // Remember this touch position for the next move event
                     mLastTouchX = x;
                     mLastTouchY = y;
+
+                    retValue = true;
                 }
 
                 break;
@@ -375,6 +379,7 @@ public class SideNavigationView extends LinearLayout {
                         hideMenuWithVelocity();
                     }
                     isDragging = false;
+                    retValue = true;
                 }
                 break;
             }
@@ -382,6 +387,7 @@ public class SideNavigationView extends LinearLayout {
             case MotionEvent.ACTION_CANCEL: {
                 mActivePointerId = INVALID_POINTER_ID;
                 isDragging = false;
+                retValue = true;
                 break;
             }
 
@@ -397,11 +403,12 @@ public class SideNavigationView extends LinearLayout {
                     mLastTouchX = MotionEventCompat.getX(ev, newPointerIndex);
                     mLastTouchY = MotionEventCompat.getY(ev, newPointerIndex);
                     mActivePointerId = MotionEventCompat.getPointerId(ev, newPointerIndex);
+                    retValue = true;
                 }
                 break;
             }
         }
-        return true;
+        return retValue;
     }
 
     protected void showMenuWithVelocity() {
