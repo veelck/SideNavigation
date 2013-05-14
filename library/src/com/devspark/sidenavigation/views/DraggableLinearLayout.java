@@ -195,6 +195,22 @@ public class DraggableLinearLayout extends LinearLayout {
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        disableEnableControls(enabled, this);
+        super.setEnabled(enabled);
+    }
+
+    private void disableEnableControls(boolean enable, ViewGroup vg) {
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View child = vg.getChildAt(i);
+            child.setEnabled(enable);
+            if (child instanceof ViewGroup) {
+                disableEnableControls(enable, (ViewGroup) child);
+            }
+        }
+    }
+
+    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         // initialize the position of the drawer to be outside visible part of the screen.

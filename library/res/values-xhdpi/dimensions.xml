@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="side_navigation_width">300dp</dimen>
+    
+    <dimen name="side_navigation_handle_margin">10dp</dimen>
+
+    <dimen name="side_navigation_active_margin">30dp</dimen>
+</resources>

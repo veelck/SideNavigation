@@ -107,6 +107,7 @@ public class SideNavigationView extends LinearLayout {
         }
         initView();
         paint.setColor(0x0f0f0000);
+        activeXDiff = getResources().getDimensionPixelOffset(R.dimen.side_navigation_active_margin);
     }
 
     /**
@@ -129,6 +130,7 @@ public class SideNavigationView extends LinearLayout {
         }
         LayoutInflater.from(getContext()).inflate(sideNavigationRes, this, true);
         navigationMenu = (DraggableLinearLayout) findViewById(R.id.side_navigation_menu);
+        navigationMenu.setEnabled(false);
         menuContent = (LinearLayout) findViewById(R.id.side_navigation_content);
         ivHandle = (ImageView) findViewById(R.id.side_navigation_handle);
         ivHandle.setOnClickListener(new OnClickListener() {
@@ -145,6 +147,7 @@ public class SideNavigationView extends LinearLayout {
                 hideMenu();
             }
         });
+        setDrawerInvisible();
     }
 
     /**
@@ -201,13 +204,17 @@ public class SideNavigationView extends LinearLayout {
 
     @Override
     protected void onAttachedToWindow() {
-        navigationMenu.setOpenningProgressListener(openningListener);
+        if (navigationMenu != null) {
+            navigationMenu.setOpenningProgressListener(openningListener);
+        }
         super.onAttachedToWindow();
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        // navigationMenu.removeOpenningProgressListener();
+        if (navigationMenu != null) {
+            navigationMenu.removeOpenningProgressListener();
+        }
         super.onDetachedFromWindow();
     }
 
@@ -215,27 +222,7 @@ public class SideNavigationView extends LinearLayout {
      * Show side navigation menu.
      */
     public void showMenu() {
-        outsideView.setVisibility(View.VISIBLE);
-        // outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(),
-        // R.anim.side_navigation_fade_in));
-
-        // show navigation menu with animation
-        // int animRes;
-        // switch (mMode) {
-        // case LEFT:
-        // animRes = R.anim.side_navigation_in_from_left;
-        // break;
-        // case RIGHT:
-        // animRes = R.anim.side_navigation_in_from_right;
-        // break;
-        //
-        // default:
-        // animRes = R.anim.side_navigation_in_from_left;
-        // break;
-        // }
-        // navigationMenu.setVisibility(View.VISIBLE);
-        // navigationMenu.startAnimation(AnimationUtils.loadAnimation(getContext(), animRes));
-
+        setDrawerVisible();
         velocityX = 1f;
         showMenuWithVelocity();
         Log.e(LOG_TAG, "showMenu()");
@@ -249,27 +236,6 @@ public class SideNavigationView extends LinearLayout {
             return;
         }
         outsideView.setVisibility(View.GONE);
-        // outsideView.startAnimation(AnimationUtils.loadAnimation(getContext(),
-        // R.anim.side_navigation_fade_out));
-
-        // hide navigation menu with animation
-
-        // int animRes;
-        // switch (mMode) {
-        // case LEFT:
-        // animRes = R.anim.side_navigation_out_to_left;
-        // break;
-        // case RIGHT:
-        // animRes = R.anim.side_navigation_out_to_right;
-        // break;
-        //
-        // default:
-        // animRes = R.anim.side_navigation_out_to_left;
-        // break;
-        // }
-        // navigationMenu.setVisibility(View.GONE);
-        // navigationMenu.startAnimation(AnimationUtils.loadAnimation(getContext(), animRes));
-
         velocityX = 1f;
         hideMenuWithVelocity();
         Log.e(LOG_TAG, "hideMenu()");
@@ -298,7 +264,7 @@ public class SideNavigationView extends LinearLayout {
 
 
                 float navMenuRight = navigationMenu.getContentWidth() + navigationMenu.getTransX();
-//                Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x);
+                // Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x);
                 if (navigationMenu.getHandleRect().contains((int) x, (int) y)) {
                     Log.d("onintercept", "handle clicked");
                     ivHandle.performClick();
@@ -315,7 +281,7 @@ public class SideNavigationView extends LinearLayout {
                     velocityTracker = VelocityTracker.obtain();
                     velocityTracker.addMovement(ev);
                     retVal = true;
-//                    Log.d("onInterceptTouchEvent", "HIT!");
+                    // Log.d("onInterceptTouchEvent", "HIT!");
                 }
                 break;
             }
@@ -473,13 +439,17 @@ public class SideNavigationView extends LinearLayout {
 
     protected void setDrawerVisible() {
         navigationMenu.setVisibility(View.VISIBLE);
+        navigationMenu.setEnabled(true);
         ViewHelper.setAlpha(outsideView, 0f);
         outsideView.setVisibility(View.VISIBLE);
-        updateLayout();
+        if (isDragging) {
+            updateLayout();
+        }
     }
 
     protected void setDrawerInvisible(){
         // navigationMenu.setVisibility(View.GONE);
+        navigationMenu.setEnabled(false);
         outsideView.setVisibility(View.GONE);
         ViewHelper.setAlpha(outsideView, 0f);
     }
@@ -502,7 +472,7 @@ public class SideNavigationView extends LinearLayout {
                     } else {
                         navigationMenu.moveBy(mPosX, 0);
                     }
-                } else if (navigationMenu.getTransX() < -navigationMenu.getContentWidth() - activeXDiff) {
+                } else if (navigationMenu.getTransX() + mPosX < -navigationMenu.getContentWidth()) {
                     navigationMenu.setTransX(-navigationMenu.getContentWidth());
                 } else {
                     navigationMenu.moveBy(mPosX, 0);

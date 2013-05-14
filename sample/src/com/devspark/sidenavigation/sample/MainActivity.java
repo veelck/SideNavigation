@@ -17,11 +17,12 @@
 package com.devspark.sidenavigation.sample;
 
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 import com.devspark.sidenavigation.SideNavigationView;
 import com.devspark.sidenavigation.SideNavigationView.Mode;
 
@@ -38,6 +39,7 @@ public class MainActivity extends SherlockActivity {
 
     private ImageView icon;
     private SideNavigationView sideNavigationView;
+    private View drawerMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,17 @@ public class MainActivity extends SherlockActivity {
         setContentView(R.layout.activity_main);
         icon = (ImageView) findViewById(android.R.id.icon);
         sideNavigationView = (SideNavigationView) findViewById(R.id.side_navigation_view);
-        sideNavigationView.setContentView(R.layout.drawer_menu);
+        drawerMenu = getLayoutInflater().inflate(R.layout.drawer_menu, null);
+        sideNavigationView.setContentView(drawerMenu);
+
+        drawerMenu.findViewById(R.id.btn_test).setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Test button clicked!", Toast.LENGTH_LONG).show();
+            }
+        });
+
         // sideNavigationView.setMenuItems(R.menu.side_navigation_menu);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
@@ -58,38 +70,6 @@ public class MainActivity extends SherlockActivity {
         }
 
         // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportMenuInflater().inflate(R.menu.main_menu, menu);
-        if (sideNavigationView.getMode() == Mode.RIGHT) {
-            menu.findItem(R.id.mode_right).setChecked(true);
-        } else {
-            menu.findItem(R.id.mode_left).setChecked(true);
-        }
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                sideNavigationView.toggleMenu();
-                break;
-            case R.id.mode_left:
-                item.setChecked(true);
-                sideNavigationView.setMode(Mode.LEFT);
-                break;
-            case R.id.mode_right:
-                item.setChecked(true);
-                sideNavigationView.setMode(Mode.RIGHT);
-                break;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        return true;
     }
 
     @Override
