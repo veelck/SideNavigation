@@ -9,6 +9,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
@@ -16,6 +19,8 @@ import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
+
+import com.devspark.sidenavigation.R;
 
 /**
  * @author Damian Walczak
@@ -45,6 +50,8 @@ public class DraggableLinearLayout extends LinearLayout {
 
     Handler handler = new Handler();
 
+    View contentView;
+    View shadowView;
     Runnable progressReporter = new Runnable() {
         @Override
         public void run() {
@@ -65,6 +72,13 @@ public class DraggableLinearLayout extends LinearLayout {
         setWillNotDraw(false);
         translationMatrix = new Matrix();
         paint.setColor(0x0f00ff00);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        contentView = findViewById(R.id.side_navigation_content);
+        shadowView = findViewById(R.id.shadow);
     }
 
     public void setOpenningProgressListener(OpenningProgressListener openningProgressListener) {
@@ -110,7 +124,13 @@ public class DraggableLinearLayout extends LinearLayout {
      * @return value in rage [0, 1]
      */
     public float getPercentOpen() {
-        return (getWidth() + getTransX()) / getWidth();
+        int contentWidth = getContentWidth();
+        return (contentWidth + getTransX()) / contentWidth;
+    }
+
+    public int getContentWidth() {
+        ViewGroup.MarginLayoutParams vlp = (MarginLayoutParams) contentView.getLayoutParams();
+        return contentView.getWidth() + vlp.leftMargin + vlp.rightMargin + shadowView.getWidth();
     }
 
     public void animTranslation(float fromX, float toX, long durationMs) {
@@ -154,11 +174,17 @@ public class DraggableLinearLayout extends LinearLayout {
         invalidate();
     }
 
+    public boolean isMenuVisible() {
+        boolean val = Math.abs(getTransX()) < getContentWidth();
+        Log.d("isMenuVisible", String.valueOf(val) + " trans " + getTransX() + " content width: " + getContentWidth());
+        return val;
+    }
+
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         // initialize the position of the drawer to be outside visible part of the screen.
-        moveBy(-getWidth(), 0);
+        moveBy(-getContentWidth(), 0);
     }
 
     @Override
