@@ -83,6 +83,7 @@ public class DraggableLinearLayout extends LinearLayout {
         contentView = findViewById(R.id.side_navigation_content);
         shadowView = findViewById(R.id.shadow);
         ivHandle = (ImageView) findViewById(R.id.side_navigation_handle);
+        hideMenuContent();
     }
 
     public void setOpenningProgressListener(OpenningProgressListener openningProgressListener) {
@@ -194,21 +195,21 @@ public class DraggableLinearLayout extends LinearLayout {
         return val;
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        disableEnableControls(enabled, this);
-        super.setEnabled(enabled);
-    }
+    // @Override
+    // public void setEnabled(boolean enabled) {
+//        disableEnableControls(enabled, this);
+    // super.setEnabled(enabled);
+    // }
 
-    private void disableEnableControls(boolean enable, ViewGroup vg) {
-        for (int i = 0; i < vg.getChildCount(); i++) {
-            View child = vg.getChildAt(i);
-            child.setEnabled(enable);
-            if (child instanceof ViewGroup) {
-                disableEnableControls(enable, (ViewGroup) child);
-            }
-        }
-    }
+    // private void disableEnableControls(boolean enable, ViewGroup vg) {
+    // for (int i = 0; i < vg.getChildCount(); i++) {
+    // View child = vg.getChildAt(i);
+    // child.setEnabled(enable);
+    // if (child instanceof ViewGroup) {
+    // disableEnableControls(enable, (ViewGroup) child);
+    // }
+    // }
+    // }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -233,6 +234,14 @@ public class DraggableLinearLayout extends LinearLayout {
         if (openningProgressListener != null) {
             handler.post(progressReporter);
         }
+    }
+
+    public void showMenuContent() {
+        contentView.setVisibility(View.VISIBLE);
+    }
+
+    public void hideMenuContent() {
+        contentView.setVisibility(View.INVISIBLE);
     }
 
 }

@@ -130,7 +130,7 @@ public class SideNavigationView extends LinearLayout {
         }
         LayoutInflater.from(getContext()).inflate(sideNavigationRes, this, true);
         navigationMenu = (DraggableLinearLayout) findViewById(R.id.side_navigation_menu);
-        navigationMenu.setEnabled(false);
+        // navigationMenu.setEnabled(false);
         menuContent = (LinearLayout) findViewById(R.id.side_navigation_content);
         ivHandle = (ImageView) findViewById(R.id.side_navigation_handle);
         ivHandle.setOnClickListener(new OnClickListener() {
@@ -141,7 +141,6 @@ public class SideNavigationView extends LinearLayout {
             }
         });
         outsideView = findViewById(R.id.side_navigation_outside_view);
-        setDrawerInvisible();
     }
 
     /**
@@ -229,7 +228,7 @@ public class SideNavigationView extends LinearLayout {
         if (isDragging) {
             return;
         }
-        outsideView.setVisibility(View.GONE);
+        // outsideView.setVisibility(View.GONE);
         velocityX = 1f;
         hideMenuWithVelocity();
         Log.e(LOG_TAG, "hideMenu()");
@@ -259,7 +258,7 @@ public class SideNavigationView extends LinearLayout {
 
 
                 float navMenuRight = navigationMenu.getContentWidth() + navigationMenu.getTransX();
-                Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x + " isShown" + isShown());
+                Log.d("onInterceptTouchEvent", "navMenuRight: " + navMenuRight + " x: " + x + " isShown " + isShown());
                 if (navigationMenu.getHandleRect().contains((int) x, (int) y)) {
                     Log.d("onintercept", "handle clicked");
                     ivHandle.performClick();
@@ -272,7 +271,8 @@ public class SideNavigationView extends LinearLayout {
                 break;
             }
         }
-        return retVal ? true : super.onInterceptTouchEvent(ev);
+        Log.e(LOG_TAG, "onIntercept returns " + String.valueOf(retVal));
+        return retVal;
     }
 
 
@@ -280,11 +280,8 @@ public class SideNavigationView extends LinearLayout {
     public boolean onTouchEvent(MotionEvent ev) {
         boolean retValue = false;
         final int action = MotionEventCompat.getActionMasked(ev);
+        Log.d("onTouch", "Action: " + action);
         switch (action) {
-            case MotionEvent.ACTION_OUTSIDE: {
-                Log.d("onTouch", "Action outside");
-                retValue = true;
-            }
             case MotionEvent.ACTION_DOWN: {
                 final int pointerIndex = MotionEventCompat.getActionIndex(ev);
                 final float x = MotionEventCompat.getX(ev, pointerIndex);
@@ -438,7 +435,7 @@ public class SideNavigationView extends LinearLayout {
 
     protected void setDrawerVisible() {
         navigationMenu.setVisibility(View.VISIBLE);
-        // navigationMenu.setEnabled(true);
+        navigationMenu.showMenuContent();
         ViewHelper.setAlpha(outsideView, 0f);
         outsideView.setVisibility(View.VISIBLE);
         if (isDragging) {
@@ -447,7 +444,7 @@ public class SideNavigationView extends LinearLayout {
     }
 
     protected void setDrawerInvisible(){
-        // navigationMenu.setEnabled(false);
+        navigationMenu.hideMenuContent();
         outsideView.setVisibility(View.GONE);
         ViewHelper.setAlpha(outsideView, 0f);
     }
