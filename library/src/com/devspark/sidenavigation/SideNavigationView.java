@@ -26,7 +26,7 @@ import com.nineoldandroids.view.ViewHelper;
  *
  */
 public class SideNavigationView extends LinearLayout {
-    public static final boolean DEBUG_LOG = true;
+    public static final boolean DEBUG_LOG = false;
 
     private static final int MAX_HIDE_ANIMATION_TIME = 200;
 
