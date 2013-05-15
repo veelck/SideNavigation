@@ -20,10 +20,10 @@ import com.nineoldandroids.view.ViewHelper;
 
 /**
  * View of displaying side navigation.
- * 
+ *
  * @author e.shishkin
  * @author Damian Walczak
- * 
+ *
  */
 public class SideNavigationView extends LinearLayout {
     public static final boolean DEBUG_LOG = true;
@@ -178,7 +178,7 @@ public class SideNavigationView extends LinearLayout {
     }
 
     /**
-     * Sets content of the menu view
+     * Sets content of the drawer view
      *
      * @param resId layout ID for the view to be used as menu content.
      */
@@ -192,6 +192,11 @@ public class SideNavigationView extends LinearLayout {
         }
     }
 
+    /**
+     * Sets content of the drawer view.
+     *
+     * @param contentView inflated view, that will be attached to the drawer.
+     */
     public void setContentView(View contentView) {
         if (contentView != null) {
             menuContent.addView(contentView);
@@ -249,6 +254,14 @@ public class SideNavigationView extends LinearLayout {
         } else {
             showMenu();
         }
+    }
+
+    /**
+     * Indicates if the drawer is visible.
+     */
+    @Override
+    public boolean isShown() {
+        return navigationMenu.isDrawerVisible();
     }
 
     @Override
@@ -506,11 +519,6 @@ public class SideNavigationView extends LinearLayout {
 
     private long getAnimDurationFromVelocity(float distance) {
         return (long) (Math.abs(distance) / velocityX);
-    }
-
-    @Override
-    public boolean isShown() {
-        return navigationMenu.isMenuVisible();
     }
 
     private void updateLayout() {
