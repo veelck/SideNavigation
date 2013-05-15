@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="side_navigation_width">140dp</dimen>
+    <dimen name="side_navigation_width">240dp</dimen>
     
     <dimen name="side_navigation_handle_margin">5dp</dimen>
 
