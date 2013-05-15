@@ -23,12 +23,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.devspark.sidenavigation.R;
+import com.devspark.sidenavigation.SideNavigationView;
 
 /**
  * @author Damian Walczak
  *
  */
 public class DraggableLinearLayout extends LinearLayout {
+
+    public static final boolean DEBUG_LOG = SideNavigationView.DEBUG_LOG;
 
     public interface AnimationListener {
         public void onAnimationStart();
@@ -209,7 +212,9 @@ public class DraggableLinearLayout extends LinearLayout {
             translateAnimation.getTransformation(currentTime, transformation);
             transformation.getMatrix().getValues(matrixValues);
             translationMatrix.setValues(matrixValues);
-            Log.d("onDraw", translationMatrix.toString());
+            if (DEBUG_LOG) {
+                Log.v("onDraw", translationMatrix.toString());
+            }
             invalidate();
         }
         canvas.concat(translationMatrix);
