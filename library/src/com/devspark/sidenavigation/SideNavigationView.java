@@ -246,6 +246,42 @@ public class SideNavigationView extends LinearLayout {
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (android.os.Build.VERSION.SDK_INT < 11) {
+            boolean retVal = false;
+            final int action = MotionEventCompat.getActionMasked(ev);
+            switch (action) {
+                case MotionEvent.ACTION_DOWN: {
+                    final int pointerIndex = MotionEventCompat.getActionIndex(ev);
+                    final float x = MotionEventCompat.getX(ev, pointerIndex);
+                    final float y = MotionEventCompat.getY(ev, pointerIndex);
+                    float navMenuRight = navigationMenu.getContentWidth() + navigationMenu.getTransX();
+                    if (navigationMenu.getHandleRect().contains((int) x, (int) y)) {
+                        retVal = true;
+                    } else if (Math.abs(x) < activeXDiff || (isShown() && x > navMenuRight - activeXDiff)) {
+                        retVal = true;
+                    }
+                    break;
+                }
+            }
+            if (!retVal) {
+                if (isShown() || isDragging) {
+                    retVal = true;
+                }
+            }
+
+            if (retVal) {
+                retVal = super.dispatchTouchEvent(ev);
+            }
+
+            // Log.d(LOG_TAG, "dispatchTouchEvent " + String.valueOf(retVal));
+            return retVal;
+        } else {
+            return super.dispatchTouchEvent(ev);
+        }
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean retVal = false;
         final int action = MotionEventCompat.getActionMasked(ev);
