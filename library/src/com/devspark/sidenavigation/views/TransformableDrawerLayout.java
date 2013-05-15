@@ -26,10 +26,19 @@ import com.devspark.sidenavigation.R;
 import com.devspark.sidenavigation.SideNavigationView;
 
 /**
+ * A LinearLayout, that has possibility of being moved using transformation matrix. All changes
+ * applied using {@link TransformableDrawerLayout#moveBy(float, float)} or
+ * {@link TransformableDrawerLayout#setTransX(float)},
+ * {@link TransformableDrawerLayout#setTransY(float)} is applied using canvas transformation.
+ *
+ * If the layout is to be used (e.g. items in it clicked when transformed), the touch events
+ * handling should be added, since current implementation doesn't translate touch events by applied
+ * transformations.
+ * 
  * @author Damian Walczak
  *
  */
-public class DraggableLinearLayout extends LinearLayout {
+public class TransformableDrawerLayout extends LinearLayout {
 
     public static final boolean DEBUG_LOG = SideNavigationView.DEBUG_LOG;
 
@@ -67,13 +76,13 @@ public class DraggableLinearLayout extends LinearLayout {
         }
     };
 
-    public DraggableLinearLayout(Context context) {
+    public TransformableDrawerLayout(Context context) {
         super(context);
         setWillNotDraw(false);
         translationMatrix = new Matrix();
     }
 
-    public DraggableLinearLayout(Context context, AttributeSet attrs) {
+    public TransformableDrawerLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWillNotDraw(false);
         translationMatrix = new Matrix();

@@ -11,7 +11,7 @@
         android:clickable="true"
         android:visibility="gone" />
 
-    <com.devspark.sidenavigation.views.DraggableLinearLayout
+    <com.devspark.sidenavigation.views.TransformableDrawerLayout
         android:id="@+id/side_navigation_menu"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
@@ -31,6 +31,6 @@
             android:background="@color/side_navigation_background"
             android:cacheColorHint="#00000000"
             />
-    </com.devspark.sidenavigation.views.DraggableLinearLayout>
+    </com.devspark.sidenavigation.views.TransformableDrawerLayout>
 
 </RelativeLayout>

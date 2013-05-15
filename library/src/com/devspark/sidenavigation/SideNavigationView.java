@@ -13,16 +13,17 @@ import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.devspark.sidenavigation.views.DraggableLinearLayout;
-import com.devspark.sidenavigation.views.DraggableLinearLayout.AnimationListener;
-import com.devspark.sidenavigation.views.DraggableLinearLayout.OpenningProgressListener;
+import com.devspark.sidenavigation.views.TransformableDrawerLayout;
+import com.devspark.sidenavigation.views.TransformableDrawerLayout.AnimationListener;
+import com.devspark.sidenavigation.views.TransformableDrawerLayout.OpenningProgressListener;
 import com.nineoldandroids.view.ViewHelper;
 
 /**
  * View of displaying side navigation.
- *
+ * 
  * @author e.shishkin
- *
+ * @author Damian Walczak
+ * 
  */
 public class SideNavigationView extends LinearLayout {
     public static final boolean DEBUG_LOG = true;
@@ -39,7 +40,7 @@ public class SideNavigationView extends LinearLayout {
 
     private int activeXDiff = 30;
 
-    private DraggableLinearLayout navigationMenu;
+    private TransformableDrawerLayout navigationMenu;
     private LinearLayout menuContent;
     private View menuContentView;
     private View outsideView;
@@ -129,7 +130,7 @@ public class SideNavigationView extends LinearLayout {
                 break;
         }
         LayoutInflater.from(getContext()).inflate(sideNavigationRes, this, true);
-        navigationMenu = (DraggableLinearLayout) findViewById(R.id.side_navigation_menu);
+        navigationMenu = (TransformableDrawerLayout) findViewById(R.id.side_navigation_menu);
         // navigationMenu.setEnabled(false);
         menuContent = (LinearLayout) findViewById(R.id.side_navigation_content);
         ivHandle = (ImageView) findViewById(R.id.side_navigation_handle);
