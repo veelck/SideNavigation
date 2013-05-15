@@ -15,11 +15,12 @@
         android:src="@drawable/ic_android_logo" />
 
         <Button
-            android:id="@+id/button1"
+            android:id="@+id/btn_open_menu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Button" />
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_caption" />
         
     <com.devspark.sidenavigation.SideNavigationView
         android:id="@+id/side_navigation_view"

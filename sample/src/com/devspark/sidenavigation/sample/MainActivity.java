@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         icon = (ImageView) findViewById(android.R.id.icon);
-        btnTest = (Button) findViewById(R.id.button1);
+        btnTest = (Button) findViewById(R.id.btn_open_menu);
         btnTest.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
