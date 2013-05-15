@@ -2,10 +2,13 @@ Change Log
 ==========
 
 
-Version 1.3.0 *(In Development)*
+Version 1.3.0 *(2013-05-15)*
 --------------------------------
 
- * ...
+ * Removed most of the old implementation
+ * Support for the custom layouts instead of menus in XML (allows to put any layout instead of just icon+text)
+ * Added support for touch events, that allows openning the menu with a gesture (swipe from left side of screen)
+ * Currently right-hand menus are not supported
 
 
 Version 1.2.1 *(2013-02-16)*
