@@ -16,13 +16,15 @@
 
 package com.devspark.sidenavigation.sample;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.devspark.sidenavigation.SideNavigationView;
 import com.devspark.sidenavigation.SideNavigationView.Mode;
 
@@ -31,13 +33,14 @@ import com.devspark.sidenavigation.SideNavigationView.Mode;
  * @author e.shishkin
  *
  */
-public class MainActivity extends SherlockActivity {
+public class MainActivity extends Activity {
 
     public static final String EXTRA_TITLE = "com.devspark.sidenavigation.sample.extra.MTGOBJECT";
     public static final String EXTRA_RESOURCE_ID = "com.devspark.sidenavigation.sample.extra.RESOURCE_ID";
     public static final String EXTRA_MODE = "com.devspark.sidenavigation.sample.extra.MODE";
 
     private ImageView icon;
+    private Button btnTest;
     private SideNavigationView sideNavigationView;
     private View drawerMenu;
 
@@ -47,6 +50,15 @@ public class MainActivity extends SherlockActivity {
 
         setContentView(R.layout.activity_main);
         icon = (ImageView) findViewById(android.R.id.icon);
+        btnTest = (Button) findViewById(R.id.button1);
+        btnTest.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Toast.makeText(MainActivity.this, "Main button clicked!",
+                // Toast.LENGTH_SHORT).show();
+                sideNavigationView.showMenu();
+            }
+        });
         sideNavigationView = (SideNavigationView) findViewById(R.id.side_navigation_view);
         drawerMenu = getLayoutInflater().inflate(R.layout.drawer_menu, null);
         sideNavigationView.setContentView(drawerMenu);
@@ -55,7 +67,9 @@ public class MainActivity extends SherlockActivity {
 
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Test button clicked!", Toast.LENGTH_LONG).show();
+                // Toast.makeText(MainActivity.this, "Test button clicked!",
+                // Toast.LENGTH_LONG).show();
+                sideNavigationView.hideMenu();
             }
         });
 
@@ -70,6 +84,12 @@ public class MainActivity extends SherlockActivity {
         }
 
         // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("MainActivity", "onTouch " + event.getAction());
+        return super.onTouchEvent(event);
     }
 
     @Override
