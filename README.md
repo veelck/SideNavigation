@@ -26,7 +26,6 @@ Installation
 The sample project requires:
 
 * The library project
-* [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock)
 
 General information
 -------------------
