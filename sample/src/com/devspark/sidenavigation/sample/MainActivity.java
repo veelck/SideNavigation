@@ -18,8 +18,6 @@ package com.devspark.sidenavigation.sample;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -29,9 +27,10 @@ import com.devspark.sidenavigation.SideNavigationView;
 import com.devspark.sidenavigation.SideNavigationView.Mode;
 
 /**
- *
+ * 
  * @author e.shishkin
- *
+ * @author Damian Walczak
+ * 
  */
 public class MainActivity extends Activity {
 
@@ -54,8 +53,6 @@ public class MainActivity extends Activity {
         btnTest.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Toast.makeText(MainActivity.this, "Main button clicked!",
-                // Toast.LENGTH_SHORT).show();
                 sideNavigationView.showMenu();
             }
         });
@@ -67,13 +64,9 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                // Toast.makeText(MainActivity.this, "Test button clicked!",
-                // Toast.LENGTH_LONG).show();
                 sideNavigationView.hideMenu();
             }
         });
-
-        // sideNavigationView.setMenuItems(R.menu.side_navigation_menu);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
             String title = getIntent().getStringExtra(EXTRA_TITLE);
@@ -83,13 +76,6 @@ public class MainActivity extends Activity {
             sideNavigationView.setMode(getIntent().getIntExtra(EXTRA_MODE, 0) == 0 ? Mode.LEFT : Mode.RIGHT);
         }
 
-        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d("MainActivity", "onTouch " + event.getAction());
-        return super.onTouchEvent(event);
     }
 
     @Override
