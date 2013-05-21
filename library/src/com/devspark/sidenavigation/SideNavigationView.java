@@ -55,6 +55,9 @@ public class SideNavigationView extends LinearLayout {
     float mLastTouchX = 0f;
     float mLastTouchY = 0f;
 
+    float mHandleClickedX = -1f;
+    float mHandleClickedY = -1f;
+
     int mActivePointerId = 0;
 
     float mPosX = 0f;
@@ -249,7 +252,7 @@ public class SideNavigationView extends LinearLayout {
      * Show/Hide side navigation menu depending on visibility.
      */
     public void toggleMenu() {
-        if (isShown()) {
+        if (isShown() && navigationMenu.getPercentOpen() >= 0.95f) {
             hideMenu();
         } else {
             showMenu();
@@ -319,9 +322,9 @@ public class SideNavigationView extends LinearLayout {
                 }
                 if (navigationMenu.getHandleRect().contains((int) x, (int) y)) {
                     if (DEBUG_LOG) {
-                        Log.v("onintercept", "handle clicked");
+                        Log.v("onintercept", "handle pressed");
                     }
-                    ivHandle.performClick();
+                    // ivHandle.performClick();
                     retVal = true;
                 } else if (Math.abs(x) < activeXDiff || (isShown() && x > navMenuRight - activeXDiff)) {
                     retVal = true;
@@ -356,7 +359,13 @@ public class SideNavigationView extends LinearLayout {
                 }
 
                 float navMenuRight = navigationMenu.getContentWidth() + navigationMenu.getTransX();
-                if (Math.abs(x) < activeXDiff || (isShown() && x > navMenuRight - activeXDiff)) {
+                boolean handlePressed = navigationMenu.getHandleRect().contains((int) x, (int) y);
+                if (handlePressed) {
+                    mHandleClickedX = x;
+                    mHandleClickedY = y;
+                }
+
+                if (handlePressed || Math.abs(x) < activeXDiff || (isShown() && x > navMenuRight - activeXDiff)) {
                     isDragging = true;
                     // Remember where we started (for dragging)
                     mLastTouchX = x;
@@ -406,32 +415,56 @@ public class SideNavigationView extends LinearLayout {
 
             case MotionEvent.ACTION_UP: {
                 if (isDragging) {
-                    velocityTracker.addMovement(ev);
-                    mActivePointerId = INVALID_POINTER_ID;
-                    velocityTracker.computeCurrentVelocity(1);
-                    velocityX = velocityTracker.getXVelocity();
-                    if (Math.abs(velocityX) < MIN_VELOCITY) {
-                        if (velocityX > 0) {
-                            velocityX = MIN_VELOCITY;
-                        } else {
-                            velocityX = -MIN_VELOCITY;
+                    final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
+                    final float x = MotionEventCompat.getX(ev, pointerIndex);
+                    final float y = MotionEventCompat.getY(ev, pointerIndex);
+
+                    boolean handleClicked = false;
+                    boolean handlePressed = navigationMenu.getHandleRect().contains((int) x, (int) y);
+                    if (handlePressed && mHandleClickedX >= 0 && mHandleClickedY >= 0) {
+
+                        double clickDistance = Math.sqrt(Math.pow(x - mHandleClickedX, 2) + Math.pow(y - mHandleClickedY, 2));
+                        if (DEBUG_LOG) {
+                            Log.v(LOG_TAG, String.format("dis: %f x: %f y: %f old x: %f old y: %f", clickDistance, x, y, mHandleClickedX,
+                                            mHandleClickedY));
                         }
+                        if (clickDistance < activeXDiff) {
+                            isDragging = false;
+                            ivHandle.performClick();
+                            handleClicked = true;
+                        }
+                        mHandleClickedX = -1f;
+                        mHandleClickedY = -1f;
                     }
-                    velocityTracker.recycle();
-                    velocityTracker = null;
-                    if (velocityX < 0) {
-                        hideMenuWithVelocity();
-                        // Log.d("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%f", velocityX,
-                        // mPosX));
-                    } else if (velocityX > 0) {
-                        showMenuWithVelocity();
-                        // Log.d("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%f", velocityX,
-                        // mPosX));
-                    } else {
-                        // Log.d("UNDEFINED", "velocity is zero");
-                        hideMenuWithVelocity();
+
+                    if (handleClicked == false) {
+                        velocityTracker.addMovement(ev);
+                        mActivePointerId = INVALID_POINTER_ID;
+                        velocityTracker.computeCurrentVelocity(1);
+                        velocityX = velocityTracker.getXVelocity();
+                        if (Math.abs(velocityX) < MIN_VELOCITY) {
+                            if (velocityX > 0) {
+                                velocityX = MIN_VELOCITY;
+                            } else {
+                                velocityX = -MIN_VELOCITY;
+                            }
+                        }
+                        velocityTracker.recycle();
+                        velocityTracker = null;
+                        if (velocityX < 0) {
+                            hideMenuWithVelocity();
+                            // Log.d("HIDE MENU", String.format("HIDE MENU v=%.2f dx=%f", velocityX,
+                            // mPosX));
+                        } else if (velocityX > 0) {
+                            showMenuWithVelocity();
+                            // Log.d("SHOW MENU", String.format("SHOW MENU v=%.2f dx=%f", velocityX,
+                            // mPosX));
+                        } else {
+                            // Log.d("UNDEFINED", "velocity is zero");
+                            hideMenuWithVelocity();
+                        }
+                        isDragging = false;
                     }
-                    isDragging = false;
                     retValue = true;
                 }
                 break;
@@ -475,8 +508,9 @@ public class SideNavigationView extends LinearLayout {
         if (durationMillis > MAX_SHOW_ANIMATION_TIME || durationMillis < 0) {
             durationMillis = MAX_SHOW_ANIMATION_TIME;
         }
-        // Log.d("showMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f",
-        // durationMillis, fromXDelta, toXDelta));
+        if (DEBUG_LOG) {
+            Log.d("showMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
+        }
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis);
     }
 
@@ -487,8 +521,9 @@ public class SideNavigationView extends LinearLayout {
         if (durationMillis > MAX_HIDE_ANIMATION_TIME || durationMillis < 0) {
             durationMillis = MAX_HIDE_ANIMATION_TIME;
         }
-        // Log.d("hideMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f",
-        // durationMillis, fromXDelta, toXDelta));
+        if (DEBUG_LOG) {
+            Log.d("hideMenuWithVelocity", String.format("dur: %dms fromX: %f toX: %f", durationMillis, fromXDelta, toXDelta));
+        }
         navigationMenu.animTranslation(fromXDelta, toXDelta, durationMillis, new AnimationListener() {
 
             @Override
